@@ -2,11 +2,14 @@ source("functions/00_libraries.R")
 source("functions/00_helper_functions.R")
 source("functions/01_ysi_profile.R")
 
+
+# KAG 20250815 -- I downloaded the YSI profiles to my machine for easy access locally. For days with multiple YSI profiles from different ice holes I took only the deepest profile 
+
 # Profiles for Green Lake 4 (GL4) ---------------------------------------------
 
 # Inspect the profiles, summarize the data, and export into "GL4 > export" folder
 
-GL4_dir <- here("data/Sensors/YSI Pro DSS/GL4/raw")
+GL4_dir <- here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/GL4")
 
 # Get all text files in the main directory and its subdirectories
 GL4files <- dir_ls(GL4_dir, regexp = "\\.csv$", recurse = TRUE)
@@ -15,48 +18,42 @@ GL4files <- dir_ls(GL4_dir, regexp = "\\.csv$", recurse = TRUE)
 GL4files <- GL4files[str_detect(GL4files, "Zmax")]
 length(GL4files)
 
+# Write plotting function 
 
-# ... 2024-06-27 ----------------------------------------------------------
+Round_Plot_YSI_FUNC <- function(ysi_profile, round_to_nearest ){
+  ysi_profile %>%
+    mutate(depth_m=round(depth_m/ round_to_nearest )* round_to_nearest ) %>% #round to the nearest 0.5
+    group_by(depth_m, parameter, lake) %>%
+    mutate(value = median(value, na.rm=TRUE)) %>%
+    mutate(month=month(date_time)) %>%
+    filter(!parameter %in% c("barometer_mmHg","cond_spec_uScm")) %>%
+    ggplot(aes(x=value, y=depth_m, color=parameter))+
+    geom_point()+
+    scale_y_reverse()+
+    facet_wrap(parameter~., scales="free_x", nrow = 2)+
+    labs(title=paste(unique(ysi_profile$lake),unique(ysi_profile$date)))
+}
 
-
-GL4_1 <- process_ysi(GL4files[1])
-head(GL4_1)
-
-GL4_1 %>%
-  mutate(depth_m=round(depth_m/0.5)*0.5) %>% #round to the nearest 0.5
-  group_by(depth_m, parameter, lake) %>%
-  mutate(value = median(value, na.rm=TRUE)) %>%
-  mutate(month=month(date_time)) %>%
-  filter(!parameter %in% c("barometer_mmHg","cond_spec_uScm")) %>%
-  ggplot(aes(x=value, y=depth_m, color=parameter))+
-  geom_point()+
-  scale_y_reverse()+
-  facet_wrap(parameter~., scales="free_x", nrow = 2)+
-  labs(title=paste(unique(GL4_1$lake),unique(GL4_1$date)))
-
-#Export a CSV with rounded depths
+# Code to #Export a CSV with rounded depths
 GL4_20240627 <- GL4_1 %>%
   mutate(depth_m=round(depth_m/0.5)*0.5) %>% #round to the nearest 0.5
   group_by(lake, date, depth_m, parameter) %>%
   summarize(value = median(value, na.rm=TRUE)) 
 write_csv(GL4_20240627, here("data/Sensors/YSI Pro DSS/GL4/export/GL4_20240627_profile.csv"))
 
-# ... 2024-07-23 ----------------------------------------------------------
 
+# Go through each month and look at the profiles 
+
+# ... 2024-06-27 ----------------------------------------------------------
+GL4_1 <- process_ysi(GL4files[1])
+head(GL4_1)
+Round_Plot_YSI_FUNC(GL4_1, 0.5)
+
+# ... 2024-07-23 ----------------------------------------------------------
 GL4_2 <- process_ysi(GL4files[2])
 head(GL4_2)
 
-GL4_2 %>%
-  mutate(depth_m=round(depth_m/0.5)*0.5) %>% #round to the nearest 0.5
-  group_by(depth_m, parameter, lake) %>%
-  mutate(value = median(value, na.rm=TRUE)) %>%
-  mutate(month=month(date_time)) %>%
-  filter(!parameter %in% c("barometer_mmHg","cond_spec_uScm")) %>%
-  ggplot(aes(x=value, y=depth_m, color=parameter))+
-  geom_point()+
-  scale_y_reverse()+
-  facet_wrap(parameter~., scales="free_x", nrow = 2)+
-  labs(title=paste(unique(GL4_2$lake),unique(GL4_2$date)))
+
 
 #Export a CSV with rounded depths
 
@@ -84,17 +81,6 @@ GL4_3 %>%
 GL4_4 <- process_ysi(GL4files[4])
 head(GL4_4)
 
-GL4_4 %>%
-  mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
-  group_by(depth_m, parameter, lake) %>%
-  mutate(value = median(value, na.rm=TRUE)) %>%
-  mutate(month=month(date_time)) %>%
-  filter(!parameter %in% c("barometer_mmHg","cond_spec_uScm")) %>%
-  ggplot(aes(x=value, y=depth_m, color=parameter))+
-  geom_point()+
-  scale_y_reverse()+
-  facet_wrap(parameter~., scales="free_x", nrow = 2)+
-  labs(title=paste(unique(GL4_4$lake),unique(GL4_4$date)))
 
 #Export a CSV with rounded depths
 
