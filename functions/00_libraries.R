@@ -29,6 +29,7 @@ pacman::p_load("lubridate",
                "fs",
                "dataRetrieval",
                "imputeTS",
+               "rMR",
                "vroom")
 
 #Use renv for version control.  Beginner guide here:
