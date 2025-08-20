@@ -38,14 +38,14 @@ source("functions/01_ysi_profile.R")
   # Load in Data 
     
     # GL4 
-    GL4_dir <- here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/GL4")
+    GL4_dir <- here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/raw/GL4")
     GL4files <- dir_ls(GL4_dir, regexp = "\\.csv$", recurse = TRUE)     # Get all text files in the main directory and its subdirectories
     # KAG 20250815 -- I downloaded the YSI profiles to my machine for easy access locally. For days with multiple YSI profiles from different ice holes I took only the deepest profile 
     GL4files <- GL4files[str_detect(GL4files, "Zmax")]  # Only look at the "Zmax" files
     length(GL4files) #check how many files you have 
     
     # LOC 
-    LOC_dir <- here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/LOC")
+    LOC_dir <- here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/raw/LOC")
     LOCfiles <- dir_ls(LOC_dir, regexp = "\\.csv$", recurse = TRUE) # Get all text files in the main directory and its subdirectories
     LOCfiles <- LOCfiles[str_detect(LOCfiles, "Zmax")]     # Only look at the "Zmax" files
     length(LOCfiles) #check how many files you have 
@@ -95,10 +95,10 @@ source("functions/01_ysi_profile.R")
 # 02 Visualize Profiles  ---------------------------------------------
     
   # GL4 
-  Round_Plot_YSI_FUNC(GL4_1, 0.25) # June 2024
-  Round_Plot_YSI_FUNC(GL4_2, 0.25)
+  Round_Plot_YSI_FUNC(GL4_1, 0.5) 
+  Round_Plot_YSI_FUNC(GL4_2, 0.5) 
   Round_Plot_YSI_FUNC(GL4_3, 0.25)
-  Round_Plot_YSI_FUNC(GL4_4, 0.25)
+  Round_Plot_YSI_FUNC(GL4_4, 0.25) 
   Round_Plot_YSI_FUNC(GL4_5, 0.25) # October, only one point at 0.25 m 
   Round_Plot_YSI_FUNC(GL4_6, 0.25)
   Round_Plot_YSI_FUNC(GL4_7, 0.25)
@@ -107,18 +107,18 @@ source("functions/01_ysi_profile.R")
   Round_Plot_YSI_FUNC(GL4_10, 0.25)
   Round_Plot_YSI_FUNC(GL4_11, 0.25)
   Round_Plot_YSI_FUNC(GL4_12, 0.25)
-  Round_Plot_YSI_FUNC(GL4_13, 0.25)
+  Round_Plot_YSI_FUNC(GL4_13, 0.5)
   
   
   # LOC 
-  Round_Plot_YSI_FUNC(LOC_1, 0.1)
+  Round_Plot_YSI_FUNC(LOC_1, 0.25)
   Round_Plot_YSI_FUNC(LOC_2, 0.1) # Looks good 
-  Round_Plot_YSI_FUNC(LOC_3, 0.1)
+  Round_Plot_YSI_FUNC(LOC_3, 0.25)
   Round_Plot_YSI_FUNC(LOC_4, 0.1)
-  Round_Plot_YSI_FUNC(LOC_5, 0.1)
+  Round_Plot_YSI_FUNC(LOC_5, 0.25)
   Round_Plot_YSI_FUNC(LOC_6, 0.1)
   Round_Plot_YSI_FUNC(LOC_7, 0.25)
-  Round_Plot_YSI_FUNC(LOC_8, 0.1)
+  Round_Plot_YSI_FUNC(LOC_8, 0.25)
   Round_Plot_YSI_FUNC(LOC_9, 0.25)
   Round_Plot_YSI_FUNC(LOC_10, 0.1) #October 2024 only one reading at 0.5 m 
   Round_Plot_YSI_FUNC(LOC_11, 0.1) # November 2024 only one two readings from around 0.6
@@ -130,10 +130,236 @@ source("functions/01_ysi_profile.R")
   Round_Plot_YSI_FUNC(LOC_17, 0.25) # gaps and kinda all over but not bad, looks better at 0.25
   Round_Plot_YSI_FUNC(LOC_18, 0.25) # gap between 2.5 and 3 m 
   Round_Plot_YSI_FUNC(LOC_19, 0.25) # regular gaps, honestly I think from uncoil and drop then slowly feed 
-  Round_Plot_YSI_FUNC(LOC_20, 0.1) # kinda gross and jumpy with gaps 
-  Round_Plot_YSI_FUNC(LOC_21, 0.1)
-
-
+  Round_Plot_YSI_FUNC(LOC_20, 0.25) # kinda gross and jumpy with gaps 
+  Round_Plot_YSI_FUNC(LOC_21, 0.25)
+  
+  
+# 03 Export csv with rounded depths  ---------------------------------------------
+  
+  #GL4 
+      GL4_20240627 <- GL4_1 %>%
+        mutate(depth_m=round(depth_m/0.5)*0.5) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(GL4_20240627, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2024_06_27_profile.csv"))
+    
+      GL4_20240723 <- GL4_2 %>%
+        mutate(depth_m=round(depth_m/0.5)*0.5) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv( GL4_20240723, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2024_07_23_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_3, 0.25) # good at 0.25
+      GL4_20240822 <- GL4_3 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv( GL4_20240723, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2024_08_22_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_4, 0.25) # good at 0.25
+      GL4_20240926 <- GL4_4 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv( GL4_20240926, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2024_09_26_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_6, 0.25)
+      GL4_20241203 <- GL4_6 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(GL4_20241203, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2024_12_03_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_7, 0.25)
+      GL4_2025_01_28 <- GL4_7 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv( GL4_2025_01_28, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/ GL4_2025_01_28_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_8, 0.25)
+      GL4_2025_02_27 <- GL4_8 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(GL4_2025_02_27, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2025_02_27_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_9, 0.25)
+      GL4_2025_03_20 <- GL4_9 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(GL4_2025_03_20, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2025_03_20_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_10, 0.25)
+      GL4_2025_04_22 <- GL4_10 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(GL4_2025_04_22, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2025_04_22_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_11, 0.25)
+      GL4_2025_07_01 <- GL4_11 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(GL4_2025_07_01, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2025_07_01_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_12, 0.25)
+      GL4_2025_07_23 <- GL4_12 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(GL4_2025_07_23, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2025_07_23_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(GL4_13, 0.5)
+      GL4_2025_08_12 <- GL4_13 %>%
+        mutate(depth_m=round(depth_m/0.5)*0.5) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(GL4_2025_08_12, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/GL4/GL4_2025_08_12_profile.csv"))
+      
+  
+  # LOC 
+      Round_Plot_YSI_FUNC(LOC_1, 0.25)
+      LOC_2023_12_05 <- LOC_1 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2023_12_05, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2023_12_05_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_2, 0.1) 
+      LOC_2024_01_30 <- LOC_2 %>%
+        mutate(depth_m=round(depth_m/0.1)*0.1) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2024_01_30, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2024_01_30_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_3, 0.25)
+      LOC_2024_02_06 <- LOC_3 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2024_02_06, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2024_02_06_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_4, 0.1)
+      LOC_2024_03_05 <- LOC_4 %>%
+        mutate(depth_m=round(depth_m/0.1)*0.1) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2024_03_05, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2024_03_05_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_5, 0.25)
+      LOC_2024_04_23 <- LOC_5 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2024_04_23, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2024_04_23_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_6, 0.1)
+      LOC_2024_05_13 <- LOC_6 %>%
+        mutate(depth_m=round(depth_m/0.1)*0.1) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2024_05_13, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/ LOC_2024_05_13_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_7, 0.25)
+      LOC_2024_06_13 <- LOC_7 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2024_06_13, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2024_06_13_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_8, 0.25)
+      LOC_2024_07_09 <- LOC_8 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2024_07_09, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2024_07_09_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_9, 0.25)
+      LOC_2024_09_24 <- LOC_9 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2024_09_24, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2024_09_24_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_10, 0.1) #October 2024 only one reading at 0.5 m 
+      Round_Plot_YSI_FUNC(LOC_11, 0.1) # November 2024 only one two readings from around 0.6
+      
+      Round_Plot_YSI_FUNC(LOC_12, 0.1)
+      LOC_2024_12_12 <- LOC_12 %>%
+        mutate(depth_m=round(depth_m/0.1)*0.1) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2024_12_12, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2024_12_12_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_13, 0.1) 
+      LOC_2025_01_16 <- LOC_13 %>%
+        mutate(depth_m=round(depth_m/0.1)*0.1) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2025_01_16, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2025_01_16_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_14, 0.1)
+      LOC_2025_01_24 <- LOC_14 %>%
+        mutate(depth_m=round(depth_m/0.1)*0.1) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2025_01_24, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2025_01_24_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_15, 0.1)
+      LOC_2025_02_11 <- LOC_15 %>%
+        mutate(depth_m=round(depth_m/0.1)*0.1) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2025_02_11, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2025_02_11_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_16, 0.25)
+      LOC_2025_02_25 <- LOC_16 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2025_02_25, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2025_02_25_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_17, 0.25) 
+      LOC_2025_03_11 <- LOC_17 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2025_03_11, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2025_03_11_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_18, 0.25)  
+      LOC_2025_04_15 <- LOC_18 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2025_04_15, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2025_04_15_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_19, 0.25) 
+      LOC_2025_05_22 <- LOC_19 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2025_05_22, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2025_05_22_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_20, 0.25) 
+      LOC_2025_06_19 <- LOC_20 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2025_06_19, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2025_06_19_profile.csv"))
+      
+      Round_Plot_YSI_FUNC(LOC_21, 0.25)
+      LOC_2025_07_29 <- LOC_21 %>%
+        mutate(depth_m=round(depth_m/0.25)*0.25) %>% #round to the nearest 0.5
+        group_by(lake, date, depth_m, parameter) %>%
+        summarize(value = median(value, na.rm=TRUE)) 
+      write_csv(LOC_2025_07_29, here("/Users/kaga3666/Library/CloudStorage/OneDrive-UCB-O365/Graduate_School/04_Mountain_Limno_Lab/01_Data/Sensor_Data/YSI_DSSPro/cleaned/LOC/LOC_2025_07_29_profile.csv"))
+      
+      
+      
+  
 # # Profiles for The Loch (LOC) 
 # 
 # # Inspect the profiles, summarize the data, and export inot "LOC > export" folder
