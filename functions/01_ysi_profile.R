@@ -8,7 +8,7 @@
 # on June 1, 2026
 # ----------------------------------------------------------------------------------
 
-process_ysi_updated <- function(file_path) {
+process_ysi <- function(file_path) {
   # Extract information from file name
   file_name <- path_file(file_path)
   file_info <- strsplit(file_name, "[_]")[[1]]
