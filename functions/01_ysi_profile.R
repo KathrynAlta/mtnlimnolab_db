@@ -3,10 +3,12 @@
 # file and converts it into a CSV and make the headings all pretty. This 
 # function is meant for looking at lake profiles. See script 02_ysi_point.R 
 # for a point measurement function.
+# The KOR software started exporting the CSVs in a different format end of 2025
+# so Bella updated the function to be more flexible with recognizing header names
+# on June 1, 2026
 # ----------------------------------------------------------------------------------
 
-
-process_ysi <- function(file_path) {
+process_ysi_updated <- function(file_path) {
   # Extract information from file name
   file_name <- path_file(file_path)
   file_info <- strsplit(file_name, "[_]")[[1]]
@@ -16,23 +18,27 @@ process_ysi <- function(file_path) {
   
   # Fix encoding and special characters in column names
   Encoding(colnames(data)) <- "latin1"
-  colnames(data) <- gsub("<b5>", "µ", colnames(data))
+  colnames(data) <- toupper(colnames(data))
+  colnames(data) <- gsub("<B5>", "µ", colnames(data))
   
   # Define rename map (old = new)
   rename_map <- c(
-    "Date (MM/DD/YYYY)" = "date", 
-    "Time (HH:mm:ss)" = "time", 
-    "Chlorophyll RFU" = "chla_RFU", 
-    "Cond µS/cm" = "cond_uScm", 
-    "Depth m" = "depth_m", 
-    "ODO % sat" = "do_percent", 
-    "ODO mg/L" = "do_mgL", 
-    "ORP mV" = "orp_mV", 
-    "SpCond µS/cm" = "cond_spec_uScm", 
-    "TAL PC RFU" = "phycoC_RFU", 
-    "pH" = "pH", 
-    "Temp °C" = "temp_C", 
-    "Barometer mmHg" = "barometer_mmHg"
+    "DATE (MM/DD/YYYY)"  = "date",
+    "DATE (M/D/YYYY)"    = "date",
+    "TIME (HH:MM:SS)"    = "time",
+    "TIME (H:MM:SS TT)"  = "time",
+    "CHLOROPHYLL RFU"    = "chla_RFU",
+    "COND ΜS/CM"         = "cond_uScm",
+    "COND ÎŒS/CM"        = "cond_uScm",
+    "DEPTH M"            = "depth_m",
+    "ODO % SAT"          = "do_percent",
+    "ODO MG/L"           = "do_mgL",
+    "ORP MV"             = "orp_mV",
+    "SPCOND µS/CM"       = "cond_spec_uScm",
+    "TAL PC RFU"         = "phycoC_RFU",
+    "PH"                 = "pH",
+    "TEMP °C"            = "temp_C",
+    "BAROMETER MMHG"     = "barometer_mmHg"
   )
   
   # Keep only names that exist in the data
@@ -41,10 +47,14 @@ process_ysi <- function(file_path) {
   # Safely rename columns
   data <- data %>% rename(!!!setNames(names(existing_rename_map), existing_rename_map))
   
-  # Merge date and time if both exist
+  # Merge date and time, parsing both 12hr and 24hr formats
   if (all(c("date", "time") %in% colnames(data))) {
     data <- data %>%
-      mutate(date_time = paste(date, time))
+      mutate(date_time = parse_date_time(
+        paste(date, time),
+        orders = c("m/d/Y H:M:S", "m/d/Y I:M:S p"),  # 24hr then 12hr AM/PM
+        quiet = TRUE
+      ))
   } else {
     data$date_time <- NA
   }
@@ -63,8 +73,8 @@ process_ysi <- function(file_path) {
     relocate(lake, .before = everything()) %>%
     relocate(site, .after = lake) %>%
     relocate(depth_m, .after = date_time) %>%
-    mutate(date_time = suppressWarnings(mdy_hms(date_time)),
-           date = as.Date(date_time)) %>%
+    # mutate(date_time = suppressWarnings(mdy_hms(date_time)),
+    # date = as.Date(date_time)) %>%
     pivot_longer(cols = any_of(setdiff(keep_cols, c("date_time", "depth_m"))), 
                  names_to = "parameter")
   
