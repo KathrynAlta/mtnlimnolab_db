@@ -29,16 +29,21 @@
 #___________________________________________
 
 # Plot to check metadata 
+
+# We don't record the first set of digits in our database so remove them here 
+combined_data$sensor_num_sub <- substring(combined_data$sensor_num, 6, 12)
+
 combined_data %>%
-  filter(sensor_num == "099675") %>%
-  filter(date_time >= as.POSIXct("2018-09-24") & date_time <= as.POSIXct("2018-10-01")) %>%
+  filter(sensor_num_sub == "822871") %>%
+  filter(date_time >= as.POSIXct("2026-03-01") & date_time <= as.POSIXct("2026-06-15")) %>%
   ggplot(
     aes(
       x = date_time, 
       y = temp
     )
   ) + 
-  geom_point(color = "skyblue") + 
+  geom_point(color = "goldenrod") + 
+  labs(title = "Sensor Number 822871") + 
   theme_minimal()
 
 
