@@ -34,7 +34,8 @@ process_ysi <- function(file_path) {
     "ODO % SAT"          = "do_percent",
     "ODO MG/L"           = "do_mgL",
     "ORP MV"             = "orp_mV",
-    "SPCOND µS/CM"       = "cond_spec_uScm",
+    "SPCOND ΜS/CM"       = "cond_spec_uScm",
+    "SPCOND ÎŒS/CM"      = "cond_spec_uScm",
     "TAL PC RFU"         = "phycoC_RFU",
     "PH"                 = "pH",
     "TEMP °C"            = "temp_C",
@@ -166,56 +167,8 @@ OTI_YSI_FUNC <- function(ysi_profile, round_to_nearest){
     }
 
 
-## ORIGINAL just in case
-# process_ysi <- function(file_path) {
-#   # Extract information from file name
-#   file_name <- path_file(file_path)
-#   file_info <- strsplit(file_name, "[_]")[[1]]
-#   # Read in file
-#   data <- read.csv(file_path, sep = ",", header = TRUE, skip = 18, skipNul = TRUE, check.names = FALSE)
-#   # Fix encoding and special characters in column names
-#   Encoding(colnames(data)) <- "latin1"
-#   colnames(data) <- gsub("<b5>", "µ", colnames(data))
-#   # Rename columns
-#   # Call by column name rather than position
-#   data <- data %>%
-#     rename(
-#       date = "Date (MM/DD/YYYY)", 
-#       time = "Time (HH:mm:ss)", 
-#       chla_RFU = "Chlorophyll RFU", 
-#       cond_uScm = "Cond µS/cm", 
-#       depth_m = "Depth m", 
-#       do_percent = "ODO % sat", 
-#       do_mgL = "ODO mg/L", 
-#       orp_mV = "ORP mV", 
-#       cond_spec_uScm = "SpCond µS/cm", 
-#       phycoC_RFU = "TAL PC RFU", 
-#       pH = "pH", 
-#       temp_C = "Temp °C", 
-#       barometer_mmHg = "Barometer mmHg"
-#     ) %>%
-#     # Merge date and time columns
-#     mutate(date_time = paste(date, time)) %>%
-#     # Select desired columns
-#     select(date_time, chla_RFU, cond_uScm, depth_m, do_percent, do_mgL, orp_mV, cond_spec_uScm, 
-#            phycoC_RFU, pH, temp_C, barometer_mmHg
-#     ) %>%
-#     # Create columns for lake and site from file path
-#     mutate(lake = file_info[1],
-#            site = file_info[2]) %>%
-#     # Move columns
-#     relocate(date_time, .before = chla_RFU) %>%
-#     relocate(lake, .before = date_time) %>%
-#     relocate(site, .before = date_time) %>%
-#     relocate(depth_m, .after = date_time) %>%
-#     # Fix date formatting
-#     mutate(date_time = mdy_hms(date_time),
-#            date = date(date_time)) %>%
-#     # Pivot to long format
-#     pivot_longer(cols = c(chla_RFU:barometer_mmHg), names_to = "parameter") 
-#   # Return new dataframe
-#   return(data)
-# }
-
 # Example below for profile measurement
 # result_df <- process_ysi("Data/On Thin Ice/01_YSI/LOC/raw/Loch_Zmax_20250415.csv")
+result_df <- process_ysi("~/OneDrive - UCB-O365/Research/Data/R/sensor_db/data/Sensors/YSI Pro DSS/GL4/raw/GL4_Zmax_20251216.csv")
+data <- read.csv("~/OneDrive - UCB-O365/Research/Data/R/sensor_db/data/Sensors/YSI Pro DSS/GL4/raw/GL4_Zmax_20251216.csv",
+                 sep = ",", header = TRUE, skip = 18, skipNul = TRUE, check.names = FALSE)
