@@ -19,38 +19,61 @@
 
     # Load and clean data using the "git miniDOT" function from the miniDOT functions script (loaded above)
     combined_data <- get_miniDOT(data_path) # this can take a minute, it is a lot of data to process 
-    depret <- read_excel(file.path(data_path, "Sensors/buoy_deployment_retreival_test.xlsx"))
+    depret_test <- read_excel(file.path(data_path, "Sensors/buoy_deployment_retreival_test.xlsx"))
+    depret <- read_excel(file.path(data_path, "Sensors/sensor_metadata_all_loggers_KAG20260603.xlsx"))
 
+    # combined_data_bombshelter <- combined_data
 
 #___________________________________________
 # MiniDOT 
 #___________________________________________
 
+# Plot to check metadata 
 
-##### Katie Scratch 2026-04-03 figuring out buoy deployment with sensor nuumber START ________________________________________
-    # # Make a test dataset that is only sky 2025
-    # combined_data <- combined_data %>% 
-    #   filter(date_time >= as.POSIXct("2025-05-01") & lake_id == "SKY")
+# We don't record the first set of digits in our database so remove them here 
+combined_data$sensor_num_sub <- substring(combined_data$sensor_num, 6, 12)
 
-    # # plot to sanity check 
-    # combined_data %>%
-    #   ggplot(aes(x = date_time, y = temp, color = as.character(depth), group = as.character(depth))) + 
-    #   geom_line() + 
-    #   theme_minimal() + 
-    #   facet_wrap(~lake_id)
+combined_data %>%
+  filter(sensor_num_sub == "822871") %>%
+  filter(date_time >= as.POSIXct("2026-03-01") & date_time <= as.POSIXct("2026-06-15")) %>%
+  ggplot(
+    aes(
+      x = date_time, 
+      y = temp
+    )
+  ) + 
+  geom_point(color = "goldenrod") + 
+  labs(title = "Sensor Number 822871") + 
+  theme_minimal()
 
 
 #___________________________________________
 # 1. Format the deployment and retreival data 
 
-  # Format the deployment and retreival data 
     # format datetime into a timestamp POSIXct 
-    depret$date <- paste(substring(depret$date_time, 1, 4), substring(depret$date_time, 5, 6), substring(depret$date_time, 7, 8), sep = "-" ) # this just adds "-" in between the year month and day in the date so that it is an unambiguous format and sets it to the very end of the day (removes the )
+    depret$date <- paste(substring(depret$date_time, 1, 4), 
+                          substring(depret$date_time, 5, 6), 
+                          substring(depret$date_time, 7, 8), 
+                          sep = "-" ) # this just adds "-" in between the year month and day in the date so that it is an unambiguous format and sets it to the very end of the day (removes the )
+
+    # standardize if it says deploy or deployed 
+    depret<- depret %>% 
+      mutate(deployed_retreived = case_when(
+                                    deployed_retreived == "deploy" |  deployed_retreived == "deployed" ~ "deployed", 
+                                    deployed_retreived == "retrieve" | deployed_retreived == "retrieved" ~ "retrieved", 
+                                    TRUE ~ NA
+                                  )
+      )
 
     # format date times to remove the full day when sensor was out of the water 
-    depret$date_time <- ifelse(depret$deployed_retreived == "deployed", paste(depret$date, "23:59:59", sep = " "), 
-                                  paste(depret$date, "00:00:01", sep = " "))
+    depret$date_time <- ifelse(depret$deployed_retreived == "deployed", # if this is true 
+                                paste(depret$date, "23:59:59", sep = " "), # then use this 
+                                paste(depret$date, "00:00:01", sep = " ")) # otherwise, use this 
     depret$date_time  <- as.POSIXct(depret$date_time , format = "%Y-%m-%d %H:%M:%OS") # format the timestamp as a POSIXct 
+
+    # Remove rows with an NA for sensor number
+    depret <- depret %>% 
+      filter(!is.na(sensor_number))
 
     # Subset to only the sensor number, deploy retreive, and the time (then when you run through the minidot data just seperate everything by sensor number )
     depret <- subset(depret, select = c("sensor_number", "deployed_retreived", "date_time"))
@@ -74,7 +97,6 @@
 #___________________________________________
 # 2. Create a "status" column in combined data to denote when the buoy was above water (between retreivals and deployments)
   # NOTE: this function can take some time because the "fuzzy join" is pretty slow checking every row of all your miniDOT data 
-    # minidot <- buoy_above_water(combined_data, depret_paired)
 
     # get rid of the first 5 digits of the sensor number code because they are all the same and we don't record them 
     combined_data$sensor_num <- substring(combined_data$sensor_num, 6, 14) 
@@ -89,7 +111,7 @@
     # apply the sensor above water function across the list of combined data, adding an annotation for when the sensors were under water 
     combined_data_annotated_lst <- lapply(combined_data_lst, sensor_above_water, depret_paired)
 
-    # clean up the output and put back together
+    # clean up the output and put back together into a big dataframe 
     combined_data_annotated <- do.call(rbind, combined_data_annotated_lst)
 
     # plot to sanity check 
